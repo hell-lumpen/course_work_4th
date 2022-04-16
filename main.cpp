@@ -1,23 +1,24 @@
 #include <iostream>
 #include <list>
-
-#include "MyList.h"
+#include <chrono>
+#include "ticket_generator.h"
+#include "my_list.h"
 
 int main() {
-    MyList<int> myList;
+    TicketGenerator *generator = new RussianLotoTicketGenerator;
 
-    myList.push_back(7);
-    myList.push_back(5);
-    myList.push_back(10);
-    myList.push_back(-1);
-    myList.push_back(6);
+    auto begin = std::chrono::steady_clock::now();
 
-//    auto it = myList.begin();
-//    auto itend = myList.end();
-//    std::cout << "begin: " << it.get_current().data << " end: " << itend.get_current().data << std::endl;
-
-    for (auto i : myList) {
-        std::cout << i.data << std::endl;
+    for (size_t i = 0; i < 10000000; ++i) {
+        Ticket *ticket = generator->generate_ticket();
     }
+
+    auto end = std::chrono::steady_clock::now();
+
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(end - begin);
+
+    std::cout << "The time: " << elapsed.count() << " s\n";
+
+
     return 0;
 }
