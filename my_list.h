@@ -111,7 +111,7 @@ void my_list<T>::clear() {
 }
 
 template<class T>
-void my_list<T>::push_back(const T &value) {
+inline void my_list<T>::push_back(const T &value) {
     auto* tmp = new Node<T>;
     tmp->data = value;
     tmp->next = nullptr;
