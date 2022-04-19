@@ -16,7 +16,7 @@ struct field {
 class Ticket {
 
 public:
-    field *ticket_fields = nullptr;
+    field ticket_fields[54];
     virtual ~Ticket() = default;
     virtual void print_ticket() = 0;
 
@@ -26,13 +26,9 @@ public:
 
 class RussianLotoTicket : public Ticket {
 public:
-    RussianLotoTicket() {
-        ticket_fields = new field[54];
-    }
+    RussianLotoTicket() = default;
 
-    ~RussianLotoTicket() override {
-        delete [] ticket_fields;
-    }
+    ~RussianLotoTicket() override = default;
 
     inline void print_ticket() noexcept override {
         int count = 0;

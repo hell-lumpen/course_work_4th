@@ -24,5 +24,8 @@ int main() {
     for (int i = 0; i < 5; ++i) {
         test(generator);
     }
+
+    auto db = new Database<RussianLotoTicket>("database.bin");
+
     return 0;
 }

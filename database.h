@@ -5,43 +5,47 @@
 #ifndef COURSE_WORK_4TH_DATABASE_H
 #define COURSE_WORK_4TH_DATABASE_H
 
-#pragma once
+#include <iostream>
+#include <fstream>
 
-#include <cstdio>
-#include <string>
-#include <utility>
-
-#include "ticket.h"
-
+template<class TData>
 class Database {
 private:
-    std::string filename {};
-    FILE *pFile = nullptr;
+    std::fstream stream;
+    std::string filename;
 
 public:
+    explicit Database(std::string name) : filename(std::move(name)) {}
 
-    explicit Database(std::string database_filename) noexcept : filename(std::move(database_filename)) {}
-
-    void save(const RussianLotoTicket* record, size_t index);
-
-    RussianLotoTicket* findByTicketNumber ();
-
-    void open_file() {
-        pFile = fopen(filename.c_str(), "w");
+    __forceinline void insert(TData *data, const size_t index) noexcept {
+        stream.open(filename, std::ios::binary | std::ios::out | std::ios::app);
+        size_t position = sizeof(TData) * index;
+        stream.seekp(position);
+        stream.write(reinterpret_cast<char*>(data), sizeof(TData));
+        stream.close();
     }
 
-    void close_file() {
-        fclose(pFile);
+    __forceinline TData* select(const size_t index) noexcept {
+        stream.open(filename, std::ios::binary | std::ios::in);
+        size_t position = sizeof(TData) * index;
+        stream.seekg(position);
+        auto* data = new TData();
+        stream.read(reinterpret_cast<char*>(data), sizeof(TData));
+        stream.close();
+        return data;
+    }
+
+    __forceinline void update(TData *data, const size_t index) noexcept {
+        stream.open(filename, std::ios::binary | std::ios::out);
+        size_t position = sizeof(TData) * index;
+        stream.seekp(position);
+        stream.write(reinterpret_cast<char*>(data), sizeof(TData));
+        stream.close();
+    }
+
+    __forceinline void drop() const noexcept{
+        std::ofstream(this->filename);
     }
 };
-
-void Database::save(const RussianLotoTicket *record, size_t index) {
-
-}
-
-RussianLotoTicket *Database::findByTicketNumber() {
-    return nullptr;
-}
-
 
 #endif //COURSE_WORK_4TH_DATABASE_H

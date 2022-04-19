@@ -5,8 +5,6 @@
 #ifndef COURSE_WORK_4TH_TICKET_GENERATOR_H
 #define COURSE_WORK_4TH_TICKET_GENERATOR_H
 
-#pragma once
-
 #include <vector>
 #include <iostream>
 #include <ctime>
@@ -33,8 +31,12 @@ class RussianLotoTicketGenerator : public TicketGenerator {
 public:
 
     inline Ticket* generate_ticket() noexcept override {
+
+        auto db = new Database<RussianLotoTicket>("data.bin");
+
         auto *ticket = new RussianLotoTicket;
-        ticket->setNumber(generateTicketNumber());
+        size_t number = generateTicketNumber();
+        ticket->setNumber(number);
         std::vector<int> already_generated;
         for (int i = 0; i < 6; ++i) {
             int count = 5;
@@ -47,6 +49,8 @@ public:
                 }
             }
         }
+
+        db->insert(ticket, number);
 
         return ticket;
     }
