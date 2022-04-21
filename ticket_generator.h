@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <ctime>
+#include <random>
 #include <algorithm>
 
 #include "ticket.h"
@@ -19,47 +20,57 @@ protected:
     inline static size_t generateTicketNumber() noexcept {return ticketNumber++;}
 
 public:
+    Database<RussianLotoTicket> db = Database<RussianLotoTicket>("d.bin");
+
+public:
     virtual ~TicketGenerator() = default;
-    virtual Ticket* generate_ticket() noexcept = 0;
+    virtual Ticket* generate_ticket() = 0;
 };
 
-size_t TicketGenerator::ticketNumber = 0;
+size_t TicketGenerator::ticketNumber = 1;
 
 
 class RussianLotoTicketGenerator : public TicketGenerator {
 
 public:
 
-    inline Ticket* generate_ticket() noexcept override {
-
-        auto db = new Database<RussianLotoTicket>("data.bin");
-
+    inline Ticket* generate_ticket() override {
         auto *ticket = new RussianLotoTicket;
         size_t number = generateTicketNumber();
         ticket->setNumber(number);
-        std::vector<int> already_generated;
+        std::vector<uint8_t> already_generated;
+
+        std::default_random_engine defEngine(std::chrono::system_clock::now().time_since_epoch().count());
+        std::uniform_int_distribution<int> intDistribution(0,8);
+        std::uniform_int_distribution<int> intDistribution2(0,9);
+
         for (int i = 0; i < 6; ++i) {
             int count = 5;
 
             while (count) {
-                int index = rand() % 9;
-                if (ticket->ticket_fields[index + 9*i].value == 0) {
-                    ticket->ticket_fields[index + 9*i].value = generate_value(index, already_generated);
+                int index = intDistribution(defEngine);
+                if ((int)*(ticket->fieldValueArray + index + 9 * i) == 0) {
+                    *(ticket->fieldValueArray + index + 9 * i) = generate_value(index,
+                                                                                already_generated,
+                                                                                defEngine,
+                                                                                intDistribution2);
                     count--;
                 }
             }
         }
-
-        db->insert(ticket, number);
+        this->db.insert(ticket, number);
 
         return ticket;
     }
 
 private:
-    static __forceinline int generate_value(int index, std::vector<int> &alreadyGenerated) {
-        int generatedValue = (index + 1) * 10 + rand() % 10;
+    static __forceinline uint8_t
+    generate_value(int index, std::vector<uint8_t> &alreadyGenerated, std::default_random_engine &randomEngine,
+                   std::uniform_int_distribution<int> &intDistribution) {
+
+        uint8_t generatedValue = (index + 1) * 10 + intDistribution(randomEngine);
         while (std::find(alreadyGenerated.begin(), alreadyGenerated.end(), generatedValue) != alreadyGenerated.end()) {
-            generatedValue = (index + 1) * 10 + rand() % 10;
+            generatedValue = (index + 1) * 10 + intDistribution(randomEngine);
         }
         alreadyGenerated.push_back(generatedValue);
         return generatedValue;

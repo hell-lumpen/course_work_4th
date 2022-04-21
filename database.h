@@ -15,36 +15,49 @@ private:
     std::string filename;
 
 public:
-    explicit Database(std::string name) : filename(std::move(name)) {}
+    explicit Database(std::string name) : filename(std::move(name)) {
+        stream.exceptions(std::ios::failbit | std::ios::badbit);
+    }
 
     __forceinline void insert(TData *data, const size_t index) noexcept {
-        stream.open(filename, std::ios::binary | std::ios::out | std::ios::app);
         size_t position = sizeof(TData) * index;
         stream.seekp(position);
-        stream.write(reinterpret_cast<char*>(data), sizeof(TData));
-        stream.close();
+        stream.write(reinterpret_cast<char *>(data), sizeof(TData));
     }
 
     __forceinline TData* select(const size_t index) noexcept {
-        stream.open(filename, std::ios::binary | std::ios::in);
+        TData* data;
         size_t position = sizeof(TData) * index;
         stream.seekg(position);
-        auto* data = new TData();
-        stream.read(reinterpret_cast<char*>(data), sizeof(TData));
-        stream.close();
+        data = new TData();
+        stream.read(reinterpret_cast<char *>(data), sizeof(TData));
         return data;
     }
 
     __forceinline void update(TData *data, const size_t index) noexcept {
-        stream.open(filename, std::ios::binary | std::ios::out);
         size_t position = sizeof(TData) * index;
         stream.seekp(position);
-        stream.write(reinterpret_cast<char*>(data), sizeof(TData));
-        stream.close();
+        stream.write(reinterpret_cast<char *>(data), sizeof(TData));
     }
 
-    __forceinline void drop() const noexcept{
+    __forceinline void drop() const noexcept {
         std::ofstream(this->filename);
+    }
+
+    __forceinline void openDatabaseForUpdate() noexcept {
+        this->stream.open(filename, std::ios::binary | std::ios::out);
+    }
+
+    __forceinline void openDatabaseForSelect() noexcept {
+        this->stream.open(filename, std::ios::binary | std::ios::in);
+    }
+
+    __forceinline void openDatabaseForInsert() noexcept {
+        this->stream.open(filename, std::ios::binary | std::ios::out | std::ios::app);
+    }
+
+    __forceinline void closeDatabase() noexcept {
+        this->stream.close();
     }
 };
 

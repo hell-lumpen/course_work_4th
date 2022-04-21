@@ -7,9 +7,10 @@
 inline void test(TicketGenerator* generator) {
     auto begin = std::chrono::steady_clock::now();
 
-    for (size_t i = 0; i < 20; ++i) {
+    for (size_t i = 0; i < 1'000'000; ++i) {
         Ticket *ticket = generator->generate_ticket();
-        ticket->print_ticket();
+        delete ticket;
+//        ticket->printTicket();
     }
 
     auto end = std::chrono::steady_clock::now();
@@ -21,11 +22,16 @@ inline void test(TicketGenerator* generator) {
 
 int main() {
     TicketGenerator *generator = new RussianLotoTicketGenerator;
-    for (int i = 0; i < 5; ++i) {
+    generator->db.drop();
+    generator->db.openDatabaseForInsert();
+
+    std::cout << "Creating 100'000 tickets" << std::endl;
+    for (int i = 0; i < 10; ++i) {
         test(generator);
     }
+    generator->db.closeDatabase();
 
-    auto db = new Database<RussianLotoTicket>("database.bin");
+    system("pause");
 
     return 0;
 }
