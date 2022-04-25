@@ -20,7 +20,7 @@ protected:
     inline static size_t generateTicketNumber() noexcept {return ticketNumber++;}
 
 public:
-    Database<RussianLotoTicket> db = Database<RussianLotoTicket>("d.bin");
+    Database<RussianLotoTicket> db = Database<RussianLotoTicket>("Y:\\data.bin");
 
 public:
     virtual ~TicketGenerator() = default;
@@ -47,8 +47,10 @@ public:
         for (int i = 0; i < 6; ++i) {
             int count = 5;
 
+            int count_rand = 0;
             while (count) {
                 int index = intDistribution(defEngine);
+                count_rand++;
                 if ((int)*(ticket->fieldValueArray + index + 9 * i) == 0) {
                     *(ticket->fieldValueArray + index + 9 * i) = generate_value(index,
                                                                                 already_generated,
@@ -57,6 +59,7 @@ public:
                     count--;
                 }
             }
+            std::cout << count_rand << std::endl;
         }
         this->db.insert(ticket, number);
 
